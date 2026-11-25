@@ -7,8 +7,8 @@ RUN apt-get update && apt-get install -y \
     openssh-server git curl ca-certificates tini rsync \
     && rm -rf /var/lib/apt/lists/*
 
-# chisel — the websocket tunnel
-RUN curl -L https://github.com/jpillora/chisel/releases/latest/download/chisel_linux_amd64.gz \
+# chisel — pinned to v1.9.1 to prevent 404 errors
+RUN curl -L https://github.com/jpillora/chisel/releases/download/v1.9.1/chisel_1.9.1_linux_amd64.gz \
     | gunzip > /usr/local/bin/chisel && chmod +x /usr/local/bin/chisel
 
 # Set root password to "root" and enable password auth
