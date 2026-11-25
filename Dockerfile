@@ -4,8 +4,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV HOME=/root
 
 RUN apt-get update && apt-get install -y \
-    openssh-server git curl ca-certificates tini rsync ttyd tmux \
+    openssh-server git curl ca-certificates tini rsync python3 python3-pip \
     && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install websockets --break-system-packages
 
 # Set root password to "root"
 RUN echo "root:root" | chpasswd \
@@ -13,6 +15,7 @@ RUN echo "root:root" | chpasswd \
     && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config \
     && sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config
 
+COPY proxy.py /proxy.py
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
