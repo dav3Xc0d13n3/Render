@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: ollie-vps
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: GIT_SNAPSHOT_REPO
+        sync: false
+      - key: GIT_SNAPSHOT_TOKEN
+        sync: false
