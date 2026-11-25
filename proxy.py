@@ -3,13 +3,21 @@ import websockets
 import os
 
 async def handler(websocket):
-    reader, writer = await asyncio.open_connection('127.0.0.1', 22)
-    
+    try:
+        reader, writer = await asyncio.open_connection('127.0.0.1', 22)
+    except Exception as e:
+        print(f"Failed to connect to sshd: {e}")
+        await websocket.close()
+        return
+
     async def ws_to_tcp():
         try:
-            async for message in websocket:
+            while True:
+                message = await websocket.recv()
                 writer.write(message)
                 await writer.drain()
+        except websockets.exceptions.ConnectionClosed:
+            pass
         except Exception:
             pass
         finally:
