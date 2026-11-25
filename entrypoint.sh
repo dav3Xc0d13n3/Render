@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ---- restore snapshot before sshd starts ----
+# ---- restore snapshot before anything starts ----
 if [[ -n "${GIT_SNAPSHOT_REPO:-}" && -n "${GIT_SNAPSHOT_TOKEN:-}" ]]; then
   git config --global user.email "ollie@bench.local"
   git config --global user.name "ollie"
@@ -13,13 +13,13 @@ if [[ -n "${GIT_SNAPSHOT_REPO:-}" && -n "${GIT_SNAPSHOT_TOKEN:-}" ]]; then
   rm -rf "$SNAP_DIR"
 fi
 
-# ---- start sshd ----
+# ---- start sshd (just in case you ever get a raw port) ----
 mkdir -p /run/sshd
 /usr/sbin/sshd -D &
-SSHD_PID=$!
 
-# ---- start chisel reverse tunnel ----
-chisel server --port "${PORT:-8080}" --reverse --socks5 &
+# ---- start ttyd (web terminal) ----
+# Binds to Render's $PORT. Auth is root:root
+ttyd -p "${PORT:-8080}" -c root:root bash &
 
 # ---- periodic snapshot loop (every 5 min) ----
 if [[ -n "${GIT_SNAPSHOT_REPO:-}" && -n "${GIT_SNAPSHOT_TOKEN:-}" ]]; then
@@ -38,4 +38,4 @@ if [[ -n "${GIT_SNAPSHOT_REPO:-}" && -n "${GIT_SNAPSHOT_TOKEN:-}" ]]; then
   done &
 fi
 
-wait $SSHD_PID
+wait
