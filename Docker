@@ -1,0 +1,29 @@
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV HOME=/home/ollie
+ENV USER=ollie
+
+RUN apt-get update && apt-get install -y \
+    openssh-server git curl ca-certificates tini \
+    && rm -rf /var/lib/apt/lists/*
+
+# chisel — the websocket tunnel
+RUN curl -L https://github.com/jpillora/chisel/releases/latest/download/chisel_linux_amd64.gz \
+    | gunzip > /usr/local/bin/chisel && chmod +x /usr/local/bin/chisel
+
+RUN useradd -m -d $HOME -s /bin/bash $USER \
+    && echo "$USER:$USER" | chpasswd \
+    && mkdir -p /var/run/sshd $HOME/.ssh \
+    && chown -R $USER:$USER $HOME
+
+# sshd config — key only, no root
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/; s/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config \
+    && echo "AllowUsers $USER" >> /etc/ssh/sshd_config
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 8080
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
