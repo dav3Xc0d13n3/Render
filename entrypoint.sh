@@ -13,13 +13,13 @@ if [[ -n "${GIT_SNAPSHOT_REPO:-}" && -n "${GIT_SNAPSHOT_TOKEN:-}" ]]; then
   rm -rf "$SNAP_DIR"
 fi
 
-# ---- start sshd (just in case you ever get a raw port) ----
+# ---- start sshd ----
 mkdir -p /run/sshd
 /usr/sbin/sshd -D &
+SSHD_PID=$!
 
-# ---- start ttyd (web terminal) ----
-# Binds to Render's $PORT. Auth is root:root
-ttyd -p "${PORT:-8080}" -c root:root bash &
+# ---- start Python WebSocket bridge ----
+python3 /proxy.py &
 
 # ---- periodic snapshot loop (every 5 min) ----
 if [[ -n "${GIT_SNAPSHOT_REPO:-}" && -n "${GIT_SNAPSHOT_TOKEN:-}" ]]; then
@@ -38,4 +38,4 @@ if [[ -n "${GIT_SNAPSHOT_REPO:-}" && -n "${GIT_SNAPSHOT_TOKEN:-}" ]]; then
   done &
 fi
 
-wait
+wait $SSHD_PID
