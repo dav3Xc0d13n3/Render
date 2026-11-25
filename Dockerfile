@@ -4,14 +4,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV HOME=/root
 
 RUN apt-get update && apt-get install -y \
-    openssh-server git curl ca-certificates tini rsync \
+    openssh-server git curl ca-certificates tini rsync ttyd tmux \
     && rm -rf /var/lib/apt/lists/*
 
-# chisel — pinned to v1.9.1 to prevent 404 errors
-RUN curl -L https://github.com/jpillora/chisel/releases/download/v1.9.1/chisel_1.9.1_linux_amd64.gz \
-    | gunzip > /usr/local/bin/chisel && chmod +x /usr/local/bin/chisel
-
-# Set root password to "root" and enable password auth
+# Set root password to "root"
 RUN echo "root:root" | chpasswd \
     && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
     && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config \
