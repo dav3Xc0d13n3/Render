@@ -1,16 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ---- create 2GB swapfile if it doesn't exist ----
-if [[ ! -f /swapfile ]]; then
-  echo "creating 2G swapfile..."
-  fallocate -l 2G /swapfile
-  chmod 600 /swapfile
-  mkswap /swapfile
-  swapon /swapfile
-  echo "swap enabled."
-fi
-
 # ---- restore snapshot before anything starts ----
 if [[ -n "${GIT_SNAPSHOT_REPO:-}" && -n "${GIT_SNAPSHOT_TOKEN:-}" ]]; then
   git config --global user.email "ollie@bench.local"
